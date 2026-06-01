@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dovahkiin's Codex</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --stone: #1a1712; --stone2: #211e18; --stone3: #2a261e;
+  --parchment: #c8a96e; --parchment-light: #e8d5a3;
+  --ember: #c0622a; --ember-glow: #e07030;
+  --gold: #b8943a; --gold-bright: #d4a843;
+  --ash: #6b6355; --ash-light: #9a8f7a;
+  --ice: #7ab8c8; --blood: #8b1a1a; --ink: #0d0b08;
+  --green: #4a8c4a; --green-light: #7dcf7d;
+  --panel-bg: var(--stone2); --card-bg: var(--stone3);
+  --border: rgba(184,148,58,0.18); --border-hover: rgba(184,148,58,0.38);
+  --text: var(--parchment-light); --text-muted: var(--ash-light);
+}
+[data-theme="light"] {
+  --stone: #f0ebe0; --stone2: #faf5e8; --stone3: #f5efd8;
+  --parchment-light: #2a2318; --ash-light: #5a5040; --ash: #8a7a60;
+  --ink: #e8e0cc; --panel-bg: #faf5e8; --card-bg: #f5efd8;
+  --border: rgba(100,80,30,0.2); --border-hover: rgba(100,80,30,0.4);
+  --text: #2a2318; --text-muted: #5a5040;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--stone); color: var(--text);
+  font-family: 'Crimson Text', Georgia, serif; font-size: 16px;
+  min-height: 100vh; transition: background 0.3s, color 0.3s;
+  background-image: radial-gradient(ellipse at 20% 0%,rgba(120,60,10,0.12) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 100%,rgba(10,30,60,0.15) 0%,transparent 60%);
+}
+[data-theme="light"] body { background-image: radial-gradient(ellipse at 20% 0%,rgba(180,140,60,0.08) 0%,transparent 60%); }
+
+/* LAYOUT */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+.top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1rem; height: 52px; background: var(--ink);
+  border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 0.5rem;
+}
+[data-theme="light"] .top-bar { background: #e8e0cc; }
+.top-logo { font-family:'Cinzel',serif; font-size:1rem; color:var(--gold-bright); letter-spacing:0.15em; white-space:nowrap; }
+.top-logo span { color:var(--ash-light); font-size:0.7rem; font-family:'Crimson Text',serif; display:block; letter-spacing:0.05em; font-style:italic; }
+.top-actions { display:flex; gap:0.4rem; align-items:center; flex-shrink:0; }
+.icon-btn {
+  background:transparent; border:1px solid var(--border); color:var(--text-muted);
+  width:32px; height:32px; border-radius:3px; cursor:pointer; font-size:0.85rem;
+  display:flex; align-items:center; justify-content:center; transition:all 0.2s;
+}
+.icon-btn:hover { border-color:var(--gold); color:var(--gold-bright); }
+
+/* BODY SPLIT */
+.body-wrap { display:flex; flex:1; min-height:0; }
+
+/* SIDEBAR */
+/* PIN CARDS */
+.pin-card {
+  background:var(--card-bg); border:1px solid var(--border); border-radius:3px;
+  padding:0.8rem 1rem; margin-bottom:0.7rem; font-size:0.9rem;
+  border-left:3px solid var(--ember); transition:border-color 0.2s;
+}
+.pin-card:hover { border-color:var(--gold); }
+.pin-card .pin-title { font-family:'Cinzel',serif; font-size:0.8rem; color:var(--gold); margin-bottom:0.3rem; }
+.pin-card .pin-body { color:var(--text-muted); font-style:italic; font-size:0.9rem; line-height:1.5; }
+.loose-thread {
+  display:flex; align-items:flex-start; gap:0.5rem;
+  padding:0.4rem 0; border-bottom:1px solid var(--border); font-size:0.92rem;
+}
+.loose-thread:last-child { border-bottom:none; }
+.loose-thread input[type=checkbox] { margin-top:3px; accent-color:var(--ember); flex-shrink:0; }
+.loose-thread span { color:var(--text-muted); font-style:italic; flex:1; }
+.loose-thread span.resolved { text-decoration:line-through; opacity:0.5; }
+.add-thread { display:flex; gap:0.4rem; margin-top:0.7rem; }
+.add-thread input { flex:1; background:var(--card-bg); border:1px solid var(--border); border-radius:2px; color:var(--text); font-family:'Crimson Text',serif; font-size:0.9rem; padding:0.35rem 0.5rem; outline:none; }
+.add-thread input:focus { border-color:var(--gold); }
+.add-thread button { background:var(--ember); border:none; color:#fff; border-radius:2px; padding:0 0.7rem; cursor:pointer; font-size:0.9rem; }
+
+/* MAIN CONTENT */
+.main-content { flex:1; display:flex; flex-direction:column; }
+
+/* TABS */
+nav {
+  display:flex; overflow-x:auto; background:var(--ink);
+  border-bottom:2px solid var(--border); scrollbar-width:none; flex-shrink:0;
+}
+[data-theme="light"] nav { background:#ddd5bb; }
+nav::-webkit-scrollbar { display:none; }
+.tab-btn {
+  flex-shrink:0; padding:0.8rem 1.1rem; background:none; border:none;
+  border-bottom:3px solid transparent; color:var(--text-muted);
+  font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.08em;
+  cursor:pointer; transition:all 0.2s; white-space:nowrap;
+}
+.tab-btn:hover { color:var(--text); }
+.tab-btn.active { color:var(--gold-bright); border-bottom-color:var(--ember-glow); background:rgba(192,98,42,0.08); }
+
+/* PANELS */
+.panels-wrap { flex:1; }
+.panel { display:none; padding:1.5rem; max-width:1000px; margin:0 auto; animation:fadeIn 0.2s ease; }
+.panel.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+/* SECTION TITLE */
+.section-title {
+  font-family:'Cinzel',serif; font-size:1rem; color:var(--gold);
+  letter-spacing:0.1em; margin-bottom:1rem; padding-bottom:0.4rem;
+  border-bottom:1px solid var(--border); display:flex;
+  justify-content:space-between; align-items:center;
+}
+
+/* CARDS */
+.card {
+  background:var(--panel-bg); border:1px solid var(--border); border-radius:3px;
+  padding:1.1rem; margin-bottom:0.9rem; position:relative; transition:border-color 0.2s;
+}
+.card:hover { border-color:var(--border-hover); }
+.card::before {
+  content:''; position:absolute; top:0; left:0; width:3px; height:100%;
+  background:var(--ember); border-radius:3px 0 0 3px; opacity:0; transition:opacity 0.2s;
+}
+.card:hover::before { opacity:1; }
+.card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap:0.5rem; }
+.card-title { font-family:'Cinzel',serif; font-size:0.95rem; color:var(--text); font-weight:600; }
+.card-meta { font-size:0.82rem; color:var(--text-muted); font-style:italic; margin-bottom:0.35rem; }
+.card-body { font-size:0.92rem; line-height:1.6; color:var(--text); }
+.card-actions { display:flex; gap:0.35rem; flex-shrink:0; }
+
+/* FORMS */
+.form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:0.9rem; margin-bottom:0.9rem; }
+.form-group { display:flex; flex-direction:column; gap:0.25rem; }
+.form-group.full { grid-column:1/-1; }
+label { font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; }
+input[type=text],input[type=date],input[type=url],select,textarea {
+  background:var(--card-bg); border:1px solid var(--border); border-radius:2px;
+  color:var(--text); font-family:'Crimson Text',serif; font-size:0.92rem;
+  padding:0.4rem 0.6rem; width:100%; transition:border-color 0.2s; outline:none;
+}
+input:focus,select:focus,textarea:focus { border-color:var(--gold); box-shadow:0 0 0 2px rgba(184,148,58,0.1); }
+textarea { resize:vertical; min-height:75px; }
+select option { background:var(--card-bg); }
+
+/* BUTTONS */
+.btn { font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.08em; padding:0.45rem 1rem; border-radius:2px; cursor:pointer; border:none; transition:all 0.2s; }
+.btn-primary { background:linear-gradient(135deg,var(--ember) 0%,var(--ember-glow) 100%); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.5); box-shadow:0 2px 8px rgba(192,98,42,0.3); }
+.btn-primary:hover { box-shadow:0 4px 16px rgba(192,98,42,0.5); transform:translateY(-1px); }
+.btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text-muted); }
+.btn-ghost:hover { border-color:var(--gold); color:var(--gold-bright); }
+.btn-danger { background:transparent; border:1px solid rgba(139,26,26,0.4); color:#c06060; font-size:0.68rem; padding:0.22rem 0.55rem; }
+.btn-danger:hover { background:rgba(139,26,26,0.2); }
+.btn-sm { padding:0.22rem 0.55rem; font-size:0.68rem; }
+.btn-pin { background:transparent; border:1px solid rgba(184,148,58,0.25); color:var(--gold); font-size:0.65rem; padding:0.2rem 0.5rem; }
+.btn-pin:hover { background:rgba(184,148,58,0.1); }
+
+/* TAGS */
+.tag { display:inline-block; padding:0.12rem 0.45rem; border-radius:2px; font-size:0.72rem; font-family:'Cinzel',serif; letter-spacing:0.04em; margin:0.12rem; }
+.tag-ally { background:rgba(60,120,60,0.3); color:#7dcf7d; border:1px solid rgba(60,120,60,0.4); }
+.tag-enemy { background:rgba(139,26,26,0.3); color:#cf7d7d; border:1px solid rgba(139,26,26,0.4); }
+.tag-neutral { background:rgba(100,90,60,0.3); color:var(--ash-light); border:1px solid rgba(100,90,60,0.4); }
+.tag-unknown { background:rgba(60,80,120,0.3); color:#7d9dcf; border:1px solid rgba(60,80,120,0.4); }
+.tag-active { background:rgba(192,98,42,0.3); color:var(--ember-glow); border:1px solid rgba(192,98,42,0.4); }
+.tag-completed { background:rgba(60,120,60,0.3); color:#7dcf7d; border:1px solid rgba(60,120,60,0.4); }
+.tag-failed { background:rgba(139,26,26,0.3); color:#cf7d7d; border:1px solid rgba(139,26,26,0.4); }
+.tag-rumor { background:rgba(80,60,120,0.3); color:#9d7dcf; border:1px solid rgba(80,60,120,0.4); }
+.tag-custom { background:rgba(184,148,58,0.12); color:var(--gold); border:1px solid rgba(184,148,58,0.28); cursor:pointer; }
+.tag-custom:hover { background:rgba(184,148,58,0.22); }
+
+/* RP STATUS TAGS */
+.rp-close-ally { background:rgba(40,100,40,0.35); color:#8ddf8d; border:1px solid rgba(40,100,40,0.5); }
+.rp-rival { background:rgba(150,60,10,0.35); color:#e09060; border:1px solid rgba(150,60,10,0.5); }
+.rp-romance { background:rgba(150,30,80,0.35); color:#e080b0; border:1px solid rgba(150,30,80,0.5); }
+.rp-mentor { background:rgba(60,80,150,0.35); color:#80a0e0; border:1px solid rgba(60,80,150,0.5); }
+.rp-debt { background:rgba(120,100,20,0.35); color:#d0c060; border:1px solid rgba(120,100,20,0.5); }
+.rp-unknown { background:rgba(70,70,70,0.35); color:#aaa; border:1px solid rgba(70,70,70,0.5); }
+
+/* FILTER BAR */
+.filter-bar { display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.9rem; }
+.filter-bar .btn { font-size:0.68rem; padding:0.22rem 0.65rem; }
+
+/* SEARCH BAR */
+.search-bar { position:relative; margin-bottom:0.9rem; }
+.search-bar input { padding-left:2rem; background:rgba(0,0,0,0.2); }
+[data-theme="light"] .search-bar input { background:rgba(255,255,255,0.4); }
+.search-bar::before { content:'⚔'; position:absolute; left:0.6rem; top:50%; transform:translateY(-50%); font-size:0.72rem; color:var(--ash); pointer-events:none; }
+
+/* EMPTY STATE */
+.empty-state { text-align:center; padding:2.5rem 1rem; color:var(--ash); font-style:italic; }
+.empty-state .ei { font-size:2rem; margin-bottom:0.5rem; opacity:0.35; }
+
+/* CHAR SHEET */
+.char-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+@media(max-width:640px){.char-grid{grid-template-columns:1fr;}}
+
+/* REPUTATION BAR */
+.rep-bar-wrap { margin-top:0.4rem; }
+.rep-label { display:flex; justify-content:space-between; font-size:0.78rem; color:var(--text-muted); margin-bottom:0.2rem; }
+.rep-bar { height:5px; background:rgba(255,255,255,0.07); border-radius:10px; overflow:hidden; }
+.rep-fill { height:100%; border-radius:10px; transition:width 0.4s; }
+
+/* TIMELINE */
+.timeline { position:relative; padding-left:1.4rem; }
+.timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:1px; background:linear-gradient(180deg,var(--ember) 0%,rgba(192,98,42,0.08) 100%); }
+.timeline-entry { position:relative; margin-bottom:1rem; background:var(--panel-bg); border:1px solid var(--border); border-radius:3px; padding:0.85rem 1rem; }
+.timeline-entry::before { content:'◆'; position:absolute; left:-1.65rem; top:0.8rem; font-size:0.55rem; color:var(--ember); }
+.timeline-date { font-family:'Cinzel',serif; font-size:0.68rem; color:var(--ash); letter-spacing:0.1em; margin-bottom:0.3rem; }
+
+/* ENCOUNTER LOG on player cards */
+.enc-log { margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid var(--border); }
+.enc-entry { display:flex; gap:0.5rem; font-size:0.82rem; padding:0.25rem 0; border-bottom:1px solid var(--border); align-items:flex-start; }
+.enc-entry:last-child { border-bottom:none; }
+.enc-date { color:var(--ash); font-family:'Cinzel',serif; font-size:0.65rem; white-space:nowrap; margin-top:2px; }
+.enc-text { color:var(--text-muted); font-style:italic; flex:1; }
+.add-enc { display:flex; gap:0.3rem; margin-top:0.5rem; }
+.add-enc input { flex:1; background:var(--stone); border:1px solid var(--border); border-radius:2px; color:var(--text); font-family:'Crimson Text',serif; font-size:0.82rem; padding:0.22rem 0.4rem; outline:none; }
+.add-enc button { background:var(--ember); border:none; color:#fff; border-radius:2px; padding:0 0.5rem; cursor:pointer; font-size:0.8rem; }
+
+/* LOCATIONS */
+.loc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:0.9rem; }
+.loc-card { background:var(--panel-bg); border:1px solid var(--border); border-radius:3px; padding:1rem; transition:border-color 0.2s; }
+.loc-card:hover { border-color:var(--border-hover); }
+.loc-safe { border-left:3px solid var(--green); }
+.loc-danger { border-left:3px solid #8b1a1a; }
+.loc-neutral { border-left:3px solid var(--ash); }
+.loc-unknown { border-left:3px solid rgba(60,80,120,0.8); }
+
+/* RUMORS BOARD */
+.rumors-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:0.9rem; }
+.rumor-card {
+  background:var(--panel-bg); border:1px solid var(--border); border-radius:3px;
+  padding:0.9rem; position:relative; transition:border-color 0.2s;
+}
+.rumor-card.confirmed { border-color:rgba(60,120,60,0.5); background:rgba(60,120,60,0.05); }
+.rumor-card.false { border-color:rgba(139,26,26,0.5); background:rgba(139,26,26,0.05); opacity:0.7; }
+.rumor-status { font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.08em; margin-bottom:0.4rem; }
+
+/* CONFLICTS */
+.conflict-card { background:var(--panel-bg); border:1px solid rgba(139,26,26,0.3); border-radius:3px; padding:1rem; margin-bottom:0.9rem; border-left:3px solid #8b1a1a; }
+
+/* CHARACTER ARC */
+.arc-milestone { display:flex; gap:0.7rem; align-items:flex-start; padding:0.6rem 0; border-bottom:1px solid var(--border); }
+.arc-milestone:last-child { border-bottom:none; }
+.arc-dot { width:10px; height:10px; border-radius:50%; background:var(--ember); flex-shrink:0; margin-top:4px; box-shadow:0 0 6px rgba(192,98,42,0.5); }
+.arc-content { flex:1; }
+.arc-label { font-family:'Cinzel',serif; font-size:0.75rem; color:var(--gold); }
+.arc-text { font-size:0.88rem; color:var(--text-muted); font-style:italic; margin-top:0.15rem; }
+
+/* SCREENSHOT LOG */
+.shot-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.7rem; }
+.shot-card { background:var(--panel-bg); border:1px solid var(--border); border-radius:3px; padding:0.7rem; }
+.shot-preview { width:100%; height:100px; background:var(--card-bg); border-radius:2px; display:flex; align-items:center; justify-content:center; color:var(--ash); font-size:0.75rem; margin-bottom:0.5rem; overflow:hidden; }
+.shot-preview img { width:100%; height:100%; object-fit:cover; border-radius:2px; }
+.shot-caption { font-size:0.82rem; color:var(--text-muted); font-style:italic; }
+#shot-drop-zone:hover, #shot-drop-zone.dragover { border-color:var(--gold); background:rgba(184,148,58,0.06); }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:100; align-items:center; justify-content:center; padding:1rem; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--panel-bg); border:1px solid rgba(184,148,58,0.3); border-radius:4px; padding:1.4rem; width:100%; max-width:540px; max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.8); }
+.modal-title { font-family:'Cinzel',serif; font-size:1rem; color:var(--gold-bright); margin-bottom:1.1rem; padding-bottom:0.4rem; border-bottom:1px solid var(--border); }
+.modal-actions { display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1.1rem; }
+
+/* WANTED BANNER */
+.wanted-banner { background:linear-gradient(135deg,rgba(139,26,26,0.2) 0%,rgba(80,10,10,0.15) 100%); border:1px solid rgba(139,26,26,0.35); border-radius:3px; padding:0.8rem 1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.8rem; }
+.wanted-icon { font-size:1.5rem; }
+.wanted-text { flex:1; }
+.wanted-title { font-family:'Cinzel',serif; color:#cf7d7d; font-size:0.85rem; letter-spacing:0.08em; }
+.wanted-detail { font-size:0.85rem; color:var(--text-muted); font-style:italic; margin-top:0.15rem; }
+
+/* REPUTATION WORLD */
+.world-rep-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:0.7rem; margin-top:0.5rem; }
+.world-rep-item { background:var(--card-bg); border:1px solid var(--border); border-radius:3px; padding:0.6rem 0.8rem; }
+.world-rep-label { font-family:'Cinzel',serif; font-size:0.7rem; color:var(--text-muted); margin-bottom:0.3rem; }
+.world-rep-val { font-size:1.1rem; font-family:'Cinzel',serif; color:var(--gold-bright); }
+
+/* TOAST */
+.toast { position:fixed; bottom:1.2rem; right:1.2rem; background:var(--panel-bg); border:1px solid var(--gold); color:var(--text); padding:0.5rem 1rem; border-radius:3px; font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.05em; box-shadow:0 4px 20px rgba(0,0,0,0.5); z-index:999; transform:translateY(10px); opacity:0; transition:all 0.3s; pointer-events:none; }
+.toast.show { transform:translateY(0); opacity:1; }
+
+/* PROFILE BAR */
+.profile-bar { display:flex; align-items:center; gap:0.5rem; flex:1; justify-content:center; }
+.profile-label { font-family:'Cinzel',serif; font-size:0.68rem; color:var(--ash-light); letter-spacing:0.08em; white-space:nowrap; }
+#profile-select { background:var(--stone3); border:1px solid var(--border); border-radius:2px; color:var(--gold-bright); font-family:'Cinzel',serif; font-size:0.78rem; padding:0.3rem 0.6rem; outline:none; cursor:pointer; max-width:200px; }
+#profile-select:focus { border-color:var(--gold); }
+
+/* PROFILE CARD */
+.profile-card { background:var(--card-bg); border:1px solid var(--border); border-radius:3px; padding:0.8rem 1rem; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.8rem; transition:border-color 0.2s; }
+.profile-card:hover { border-color:var(--border-hover); }
+.profile-card.active-profile { border-color:var(--ember); border-left:3px solid var(--ember); }
+.profile-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--ember) 0%,var(--ember-glow) 100%); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+.profile-info { flex:1; }
+.profile-name { font-family:'Cinzel',serif; font-size:0.88rem; color:var(--text); }
+.profile-meta { font-size:0.78rem; color:var(--text-muted); font-style:italic; margin-top:0.1rem; }
+.save-bar { display:flex; justify-content:space-between; align-items:center; gap:0.5rem; padding:0.4rem 1rem; background:rgba(0,0,0,0.25); border-bottom:1px solid var(--border); font-size:0.75rem; color:var(--text-muted); flex-shrink:0; }
+[data-theme="light"] .save-bar { background:rgba(0,0,0,0.05); }
+.save-dot { width:6px; height:6px; border-radius:50%; background:var(--gold); box-shadow:0 0 5px var(--gold); animation:pulse 2s infinite; display:inline-block; margin-right:0.3rem; }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:var(--stone);} ::-webkit-scrollbar-thumb{background:var(--ash);border-radius:3px;} ::-webkit-scrollbar-thumb:hover{background:var(--gold);}
+
+/* TAG INPUT */
+.tag-input-wrap { display:flex; flex-wrap:wrap; gap:0.3rem; background:var(--card-bg); border:1px solid var(--border); border-radius:2px; padding:0.3rem 0.4rem; min-height:36px; align-items:center; cursor:text; }
+.tag-input-wrap:focus-within { border-color:var(--gold); }
+.tag-input-wrap .tag-chip { background:rgba(184,148,58,0.18); color:var(--gold); border:1px solid rgba(184,148,58,0.35); border-radius:2px; font-size:0.72rem; padding:0.08rem 0.4rem; font-family:'Cinzel',serif; display:flex; align-items:center; gap:0.2rem; }
+.tag-input-wrap .tag-chip button { background:none; border:none; color:var(--ash-light); cursor:pointer; font-size:0.7rem; padding:0; line-height:1; }
+.tag-input-wrap input { border:none; background:transparent; color:var(--text); font-family:'Crimson Text',serif; font-size:0.9rem; outline:none; flex:1; min-width:80px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-logo">DOVAHKIIN'S CODEX <span>Skyrim MP · RP Tracker</span></div>
+  <div class="profile-bar">
+    <span class="profile-label">Character:</span>
+    <select id="profile-select" onchange="switchProfile(this.value)" title="Switch character"></select>
+    <button class="icon-btn" title="Manage Characters" onclick="openModal('profiles')" style="font-size:0.75rem;width:auto;padding:0 0.6rem;letter-spacing:0.05em;font-family:'Cinzel',serif">Manage</button>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" title="Toggle Theme" onclick="toggleTheme()">☀</button>
+    <button class="icon-btn" title="Export current character" onclick="exportData()">⬇</button>
+    <button class="icon-btn" title="Import" onclick="document.getElementById('import-file').click()">⬆</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</div>
+
+<div class="save-bar">
+  <span><span class="save-dot"></span>Auto-save enabled</span>
+  <span id="save-time" style="font-style:italic"></span>
+</div>
+
+<div class="body-wrap">
+
+
+<!-- MAIN -->
+<div class="main-content">
+  <nav>
+    <button class="tab-btn active" onclick="switchTab('character',this)">⚔ Character</button>
+    <button class="tab-btn" onclick="switchTab('players',this)">👥 Players</button>
+    <button class="tab-btn" onclick="switchTab('quests',this)">📜 Quests</button>
+    <button class="tab-btn" onclick="switchTab('factions',this)">🏰 Factions</button>
+    <button class="tab-btn" onclick="switchTab('locations',this)">🗺 Locations</button>
+    <button class="tab-btn" onclick="switchTab('rumors',this)">📣 Rumors</button>
+    <button class="tab-btn" onclick="switchTab('conflicts',this)">⚡ Conflicts</button>
+    <button class="tab-btn" onclick="switchTab('journal',this)">📖 Journal</button>
+    <button class="tab-btn" onclick="switchTab('arc',this)">✦ Character Arc</button>
+    <button class="tab-btn" onclick="switchTab('screenshots',this)">🖼 Screenshots</button>
+    <button class="tab-btn" onclick="switchTab('notes',this)">📋 Notes</button>
+  </nav>
+
+  <div class="panels-wrap">
+
+  <!-- ══ CHARACTER ══ -->
+  <div id="panel-character" class="panel active">
+
+    <!-- Wanted Banner -->
+    <div id="wanted-banner" style="display:none" class="wanted-banner">
+      <div class="wanted-icon">⚠</div>
+      <div class="wanted-text">
+        <div class="wanted-title" id="wanted-title">WANTED</div>
+        <div class="wanted-detail" id="wanted-detail"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('wanted')">Edit</button>
+    </div>
+
+    <div class="char-grid">
+      <div>
+        <div class="section-title">Identity</div>
+        <div class="card">
+          <div class="form-group" style="margin-bottom:0.7rem"><label>Character Name</label><input type="text" id="char-name" oninput="saveChar()" placeholder="e.g. Valdris Ashborn"></div>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr">
+            <div class="form-group"><label>Race</label>
+              <select id="char-race" onchange="saveChar()">
+                <option value="">— Select —</option>
+                <option>Nord</option><option>Imperial</option><option>Breton</option>
+                <option>Redguard</option><option>Dunmer</option><option>Altmer</option>
+                <option>Bosmer</option><option>Argonian</option><option>Khajiit</option>
+                <option>Orsimer</option><option>Other</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Gender</label><input type="text" id="char-gender" oninput="saveChar()" placeholder="e.g. Male"></div>
+            <div class="form-group"><label>Age</label><input type="text" id="char-age" oninput="saveChar()" placeholder="e.g. 28"></div>
+            <div class="form-group"><label>Class / Role</label><input type="text" id="char-class" oninput="saveChar()" placeholder="e.g. Rogue"></div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:1rem">World Reputation</div>
+        <div class="card">
+          <div class="world-rep-grid">
+            <div class="world-rep-item">
+              <div class="world-rep-label">Known As</div>
+              <input type="text" id="rep-known" oninput="saveChar()" placeholder="e.g. The Shadow" style="font-size:0.85rem;margin-top:0.1rem">
+            </div>
+            <div class="world-rep-item">
+              <div class="world-rep-label">Standing</div>
+              <select id="rep-standing" onchange="saveChar()" style="font-size:0.85rem;margin-top:0.1rem">
+                <option value="">—</option>
+                <option>Unknown</option><option>Respected</option><option>Feared</option>
+                <option>Infamous</option><option>Beloved</option><option>Reviled</option>
+              </select>
+            </div>
+            <div class="world-rep-item" style="grid-column:1/-1">
+              <div class="world-rep-label">Public Perception</div>
+              <textarea id="rep-perception" oninput="saveChar()" rows="2" placeholder="How does the world see you? What are you known for?" style="font-size:0.85rem;min-height:50px;margin-top:0.2rem"></textarea>
+            </div>
+          </div>
+          <div style="margin-top:0.7rem;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+            <span style="font-family:'Cinzel',serif;font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em">Bounty Status:</span>
+            <button class="btn btn-ghost btn-sm" onclick="openModal('wanted')" id="bounty-btn">Set Bounty</button>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:1rem">Appearance</div>
+        <div class="card">
+          <div class="form-group"><textarea id="char-appearance" oninput="saveChar()" placeholder="Hair, eyes, scars, build, distinguishing features..."></textarea></div>
+        </div>
+
+        <div class="section-title" style="margin-top:1rem">Skills & Abilities</div>
+        <div class="card">
+          <div class="form-group"><label>Primary Skills</label><input type="text" id="char-skills" oninput="saveChar()" placeholder="e.g. One-Handed, Sneak, Illusion"></div>
+          <div class="form-group" style="margin-top:0.6rem"><label>Special Abilities / Powers</label><textarea id="char-powers" oninput="saveChar()" rows="3" placeholder="Racial abilities, shouts, spells, perks..."></textarea></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">Backstory</div>
+        <div class="card">
+          <div class="form-group"><label>Origin & Background</label><textarea id="char-origin" oninput="saveChar()" rows="3" placeholder="Where are you from? What shaped you?"></textarea></div>
+          <div class="form-group" style="margin-top:0.6rem"><label>Motivations & Goals</label><textarea id="char-goals" oninput="saveChar()" rows="3" placeholder="What do you want? What drives you?"></textarea></div>
+          <div class="form-group" style="margin-top:0.6rem"><label>Secrets & Flaws</label><textarea id="char-secrets" oninput="saveChar()" rows="3" placeholder="Hidden past, trauma, weaknesses..."></textarea></div>
+          <div class="form-group" style="margin-top:0.6rem"><label>Personality & Traits</label><textarea id="char-personality" oninput="saveChar()" rows="2" placeholder="How does your character act, speak, react?"></textarea></div>
+        </div>
+
+        <div class="section-title" style="margin-top:1rem">Equipment</div>
+        <div class="card">
+          <div class="form-group"><label>Weapons</label><input type="text" id="char-weapons" oninput="saveChar()" placeholder="e.g. Ebony Sword, Glass Dagger"></div>
+          <div class="form-group" style="margin-top:0.5rem"><label>Armor</label><input type="text" id="char-armor" oninput="saveChar()" placeholder="e.g. Shrouded Armor set"></div>
+          <div class="form-group" style="margin-top:0.5rem"><label>Notable Items</label><textarea id="char-items" oninput="saveChar()" rows="2" placeholder="Artifacts, quest items, valuable gear..."></textarea></div>
+          <div class="form-group" style="margin-top:0.5rem"><label>Gold / Wealth</label><input type="text" id="char-gold" oninput="saveChar()" placeholder="e.g. 3,400 septims"></div>
+        </div>
+
+        <div class="section-title" style="margin-top:1rem">Misc Notes</div>
+        <div class="card">
+          <div class="form-group"><textarea id="char-notes" oninput="saveChar()" rows="3" placeholder="Anything else important..."></textarea></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PLAYERS ══ -->
+  <div id="panel-players" class="panel">
+    <div class="section-title">
+      <span>Known Players</span>
+      <button class="btn btn-primary" onclick="openModal('player')">+ Add Player</button>
+    </div>
+    <div class="search-bar"><input type="text" id="player-search" placeholder="Search by name, username, notes..." oninput="renderPlayers()"></div>
+    <div class="filter-bar">
+      <button class="btn btn-ghost" onclick="filterPlayers('')">All</button>
+      <button class="btn btn-ghost" onclick="filterPlayers('ally')">Ally</button>
+      <button class="btn btn-ghost" onclick="filterPlayers('enemy')">Enemy</button>
+      <button class="btn btn-ghost" onclick="filterPlayers('neutral')">Neutral</button>
+      <button class="btn btn-ghost" onclick="filterPlayers('unknown')">Unknown</button>
+    </div>
+    <div id="player-list"></div>
+  </div>
+
+  <!-- ══ QUESTS ══ -->
+  <div id="panel-quests" class="panel">
+    <div class="section-title">
+      <span>Quest Log</span>
+      <button class="btn btn-primary" onclick="openModal('quest')">+ Add Quest</button>
+    </div>
+    <div class="filter-bar">
+      <button class="btn btn-ghost" onclick="filterQuests('')">All</button>
+      <button class="btn btn-ghost" onclick="filterQuests('active')">Active</button>
+      <button class="btn btn-ghost" onclick="filterQuests('completed')">Completed</button>
+      <button class="btn btn-ghost" onclick="filterQuests('failed')">Failed</button>
+      <button class="btn btn-ghost" onclick="filterQuests('rumor')">Rumors</button>
+    </div>
+    <div id="quest-list"></div>
+  </div>
+
+  <!-- ══ FACTIONS ══ -->
+  <div id="panel-factions" class="panel">
+    <div class="section-title">
+      <span>Factions & Organizations</span>
+      <button class="btn btn-primary" onclick="openModal('faction')">+ Add Faction</button>
+    </div>
+    <div id="faction-list"></div>
+  </div>
+
+  <!-- ══ LOCATIONS ══ -->
+  <div id="panel-locations" class="panel">
+    <div class="section-title">
+      <span>Discovered Locations</span>
+      <button class="btn btn-primary" onclick="openModal('location')">+ Add Location</button>
+    </div>
+    <div class="filter-bar">
+      <button class="btn btn-ghost" onclick="filterLocations('')">All</button>
+      <button class="btn btn-ghost" onclick="filterLocations('safe')">Safe</button>
+      <button class="btn btn-ghost" onclick="filterLocations('danger')">Dangerous</button>
+      <button class="btn btn-ghost" onclick="filterLocations('neutral')">Neutral</button>
+      <button class="btn btn-ghost" onclick="filterLocations('unknown')">Unknown</button>
+    </div>
+    <div class="loc-grid" id="location-list"></div>
+  </div>
+
+  <!-- ══ RUMORS ══ -->
+  <div id="panel-rumors" class="panel">
+    <div class="section-title">
+      <span>Rumors Board</span>
+      <button class="btn btn-primary" onclick="openModal('rumor')">+ Add Rumor</button>
+    </div>
+    <div class="filter-bar">
+      <button class="btn btn-ghost" onclick="filterRumors('')">All</button>
+      <button class="btn btn-ghost" onclick="filterRumors('unverified')">Unverified</button>
+      <button class="btn btn-ghost" onclick="filterRumors('confirmed')">Confirmed</button>
+      <button class="btn btn-ghost" onclick="filterRumors('false')">False</button>
+    </div>
+    <div class="rumors-grid" id="rumor-list"></div>
+  </div>
+
+  <!-- ══ CONFLICTS ══ -->
+  <div id="panel-conflicts" class="panel">
+    <div class="section-title">
+      <span>Active Conflicts</span>
+      <button class="btn btn-primary" onclick="openModal('conflict')">+ Add Conflict</button>
+    </div>
+    <div id="conflict-list"></div>
+  </div>
+
+  <!-- ══ JOURNAL ══ -->
+  <div id="panel-journal" class="panel">
+    <div class="section-title">
+      <span>Session Journal</span>
+      <button class="btn btn-primary" onclick="openModal('journal')">+ New Entry</button>
+    </div>
+    <div id="journal-list"></div>
+  </div>
+
+  <!-- ══ ARC ══ -->
+  <div id="panel-arc" class="panel">
+    <div class="section-title">
+      <span>Character Arc</span>
+      <button class="btn btn-primary" onclick="openModal('arc')">+ Add Milestone</button>
+    </div>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="form-group"><label>Arc Summary — Where is your character's story heading?</label>
+        <textarea id="arc-summary" rows="3" oninput="saveArcSummary()" placeholder="Describe the overall arc of your character's journey..."></textarea>
+      </div>
+    </div>
+    <div class="section-title">Milestones</div>
+    <div class="card"><div id="arc-list" style="padding:0.2rem 0"></div></div>
+  </div>
+
+  <!-- ══ SCREENSHOTS ══ -->
+  <div id="panel-screenshots" class="panel">
+    <div class="section-title">
+      <span>Screenshot Log</span>
+      <button class="btn btn-primary" onclick="openModal('screenshot')">+ Add Screenshot</button>
+    </div>
+    <div class="shot-grid" id="screenshot-list"></div>
+  </div>
+
+  <!-- ══ NOTES ══ -->
+  <div id="panel-notes" class="panel">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;">
+
+      <div>
+        <div class="section-title">
+          <span>📌 Pinned Notes</span>
+          <button class="btn btn-primary" onclick="openModal('pin')">+ Add Pin</button>
+        </div>
+        <div id="pin-list"></div>
+      </div>
+
+      <div>
+        <div class="section-title">📋 Pre-Session Notes</div>
+        <div class="card">
+          <textarea id="pre-session-txt" rows="6" style="width:100%;background:transparent;border:none;color:var(--text);font-family:'Crimson Text',serif;font-size:0.95rem;resize:vertical;outline:none;line-height:1.6" placeholder="Things to do next session, follow-ups, goals, reminders..." oninput="savePreSession()"></textarea>
+        </div>
+
+        <div class="section-title" style="margin-top:1.2rem">🧵 Loose Threads</div>
+        <div class="card">
+          <div id="thread-list"></div>
+          <div class="add-thread">
+            <input type="text" id="thread-input" placeholder="Add an unresolved plot thread..." onkeydown="if(event.key==='Enter')addThread()">
+            <button onclick="addThread()">+</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  </div><!-- end panels-wrap -->
+</div><!-- end main-content -->
+</div><!-- end body-wrap -->
+</div><!-- end app -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- PIN -->
+<div class="modal-overlay" id="modal-pin">
+  <div class="modal">
+    <div class="modal-title">Pin a Note</div>
+    <input type="hidden" id="pin-edit-id">
+    <div class="form-grid">
+      <div class="form-group full"><label>Title</label><input type="text" id="pin-form-title" placeholder="Short label for this pin"></div>
+      <div class="form-group full"><label>Note</label><textarea id="pin-form-body" placeholder="The content of this pinned note..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('pin')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePin()">Pin It</button>
+    </div>
+  </div>
+</div>
+
+<!-- WANTED -->
+<div class="modal-overlay" id="modal-wanted">
+  <div class="modal">
+    <div class="modal-title">Bounty & Wanted Status</div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Status</label>
+        <select id="wanted-status">
+          <option value="none">Not Wanted</option>
+          <option value="minor">Minor Bounty</option>
+          <option value="wanted">Wanted</option>
+          <option value="dangerous">Dangerous Criminal</option>
+          <option value="outlaw">Outlawed</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Wanted By / Jurisdiction</label><input type="text" id="wanted-by" placeholder="e.g. Whiterun Guard, Thieves Guild"></div>
+      <div class="form-group full"><label>Reason</label><input type="text" id="wanted-reason" placeholder="e.g. Murder, Theft, Treason"></div>
+      <div class="form-group full"><label>Bounty Amount</label><input type="text" id="wanted-amount" placeholder="e.g. 500 septims"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('wanted')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveWanted()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER -->
+<div class="modal-overlay" id="modal-player">
+  <div class="modal">
+    <div class="modal-title" id="modal-player-title">Add Player</div>
+    <input type="hidden" id="player-edit-id">
+    <div class="form-grid">
+      <div class="form-group"><label>Character Name *</label><input type="text" id="player-form-name" placeholder="Their character's name"></div>
+      <div class="form-group"><label>Player Username</label><input type="text" id="player-form-username" placeholder="e.g. @username"></div>
+      <div class="form-group"><label>Race</label>
+        <select id="player-form-race">
+          <option value="">Unknown</option>
+          <option>Nord</option><option>Imperial</option><option>Breton</option>
+          <option>Redguard</option><option>Dunmer</option><option>Altmer</option>
+          <option>Bosmer</option><option>Argonian</option><option>Khajiit</option>
+          <option>Orsimer</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Class / Role</label><input type="text" id="player-form-role" placeholder="e.g. Warrior, Mage, Rogue"></div>
+      <div class="form-group"><label>Usually Found At</label><input type="text" id="player-form-location" placeholder="e.g. Whiterun, Tavern"></div>
+      <div class="form-group"><label>Relationship</label>
+        <select id="player-form-rel">
+          <option value="unknown">Unknown</option>
+          <option value="ally">Ally</option>
+          <option value="neutral">Neutral</option>
+          <option value="enemy">Enemy</option>
+        </select>
+      </div>
+      <div class="form-group"><label>RP Status</label>
+        <select id="player-form-rpstatus">
+          <option value="">None</option>
+          <option value="close-ally">Close Ally</option>
+          <option value="rival">Rival</option>
+          <option value="romance">Romance</option>
+          <option value="mentor">Mentor</option>
+          <option value="debt">Debt Owed</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Last Seen</label><input type="date" id="player-form-lastseen"></div>
+      <div class="form-group full"><label>Description / Appearance</label><textarea id="player-form-desc" placeholder="Physical description, notable traits, gear..."></textarea></div>
+      <div class="form-group full"><label>Notes / Intel</label><textarea id="player-form-secrets" placeholder="What do you know about them? Goals, allegiances, secrets..."></textarea></div>
+      <div class="form-group full"><label>Tags (press Enter to add)</label>
+        <div class="tag-input-wrap" id="player-tag-wrap" onclick="document.getElementById('player-tag-input').focus()">
+          <input type="text" id="player-tag-input" placeholder="Add tag..." onkeydown="handleTagInput(event,'player')">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('player')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePlayer()">Save Player</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUEST -->
+<div class="modal-overlay" id="modal-quest">
+  <div class="modal">
+    <div class="modal-title" id="modal-quest-title">Add Quest</div>
+    <input type="hidden" id="quest-edit-id">
+    <div class="form-grid">
+      <div class="form-group full"><label>Quest Name *</label><input type="text" id="quest-form-name" placeholder="Quest title"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="quest-form-status">
+          <option value="active">Active</option>
+          <option value="rumor">Rumor / Lead</option>
+          <option value="completed">Completed</option>
+          <option value="failed">Failed</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Quest Giver</label><input type="text" id="quest-form-giver" placeholder="Who gave this quest?"></div>
+      <div class="form-group"><label>Location</label><input type="text" id="quest-form-location" placeholder="Where?"></div>
+      <div class="form-group"><label>Reward</label><input type="text" id="quest-form-reward" placeholder="Expected reward..."></div>
+      <div class="form-group full"><label>Description / Objective</label><textarea id="quest-form-desc" placeholder="What needs to be done?"></textarea></div>
+      <div class="form-group full"><label>Progress Notes</label><textarea id="quest-form-progress" placeholder="Current progress, clues, steps completed..."></textarea></div>
+      <div class="form-group full"><label>Tags</label>
+        <div class="tag-input-wrap" id="quest-tag-wrap" onclick="document.getElementById('quest-tag-input').focus()">
+          <input type="text" id="quest-tag-input" placeholder="Add tag..." onkeydown="handleTagInput(event,'quest')">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('quest')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveQuest()">Save Quest</button>
+    </div>
+  </div>
+</div>
+
+<!-- FACTION -->
+<div class="modal-overlay" id="modal-faction">
+  <div class="modal">
+    <div class="modal-title" id="modal-faction-title">Add Faction</div>
+    <input type="hidden" id="faction-edit-id">
+    <div class="form-grid">
+      <div class="form-group full"><label>Faction Name *</label><input type="text" id="faction-form-name" placeholder="e.g. Companions, Thieves Guild"></div>
+      <div class="form-group"><label>Standing</label>
+        <select id="faction-form-standing">
+          <option value="neutral">Neutral</option>
+          <option value="ally">Allied / Member</option>
+          <option value="enemy">Hostile</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Reputation (0–100)</label><input type="text" id="faction-form-rep" placeholder="e.g. 65"></div>
+      <div class="form-group"><label>Your Rank / Title</label><input type="text" id="faction-form-rank" placeholder="Your rank in this faction"></div>
+      <div class="form-group full"><label>Description</label><textarea id="faction-form-desc" placeholder="Who are they? What do they want?"></textarea></div>
+      <div class="form-group full"><label>Key Members</label><textarea id="faction-form-members" placeholder="Notable members you know of..."></textarea></div>
+      <div class="form-group full"><label>Notes</label><textarea id="faction-form-notes" placeholder="History, dealings, goals..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('faction')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFaction()">Save Faction</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOCATION -->
+<div class="modal-overlay" id="modal-location">
+  <div class="modal">
+    <div class="modal-title" id="modal-location-title">Add Location</div>
+    <input type="hidden" id="location-edit-id">
+    <div class="form-grid">
+      <div class="form-group full"><label>Location Name *</label><input type="text" id="location-form-name" placeholder="e.g. Dragonsreach, The Bannered Mare"></div>
+      <div class="form-group"><label>Safety</label>
+        <select id="location-form-safety">
+          <option value="unknown">Unknown</option>
+          <option value="safe">Safe</option>
+          <option value="neutral">Neutral</option>
+          <option value="danger">Dangerous</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Region / Hold</label><input type="text" id="location-form-region" placeholder="e.g. Whiterun Hold"></div>
+      <div class="form-group"><label>Controlled By</label><input type="text" id="location-form-controller" placeholder="Who controls this place?"></div>
+      <div class="form-group full"><label>Description</label><textarea id="location-form-desc" placeholder="What is this place? What's notable about it?"></textarea></div>
+      <div class="form-group full"><label>Events That Happened Here</label><textarea id="location-form-events" placeholder="Notable things that occurred at this location..."></textarea></div>
+      <div class="form-group full"><label>Tags</label>
+        <div class="tag-input-wrap" id="location-tag-wrap" onclick="document.getElementById('location-tag-input').focus()">
+          <input type="text" id="location-tag-input" placeholder="Add tag..." onkeydown="handleTagInput(event,'location')">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('location')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLocation()">Save Location</button>
+    </div>
+  </div>
+</div>
+
+<!-- RUMOR -->
+<div class="modal-overlay" id="modal-rumor">
+  <div class="modal">
+    <div class="modal-title" id="modal-rumor-title">Add Rumor</div>
+    <input type="hidden" id="rumor-edit-id">
+    <div class="form-grid">
+      <div class="form-group full"><label>The Rumor *</label><textarea id="rumor-form-text" placeholder="What did you hear?"></textarea></div>
+      <div class="form-group"><label>Source</label><input type="text" id="rumor-form-source" placeholder="Who told you this?"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="rumor-form-status">
+          <option value="unverified">Unverified</option>
+          <option value="confirmed">Confirmed True</option>
+          <option value="false">Confirmed False</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Notes</label><textarea id="rumor-form-notes" placeholder="Your thoughts, follow-up leads..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('rumor')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRumor()">Save Rumor</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFLICT -->
+<div class="modal-overlay" id="modal-conflict">
+  <div class="modal">
+    <div class="modal-title" id="modal-conflict-title">Add Conflict</div>
+    <input type="hidden" id="conflict-edit-id">
+    <div class="form-grid">
+      <div class="form-group full"><label>Conflict Name *</label><input type="text" id="conflict-form-name" placeholder="e.g. War of the Holds, Guild Feud"></div>
+      <div class="form-group"><label>Type</label>
+        <select id="conflict-form-type">
+          <option>Political</option><option>Military</option><option>Personal Feud</option>
+          <option>Guild War</option><option>Religious</option><option>Criminal</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="conflict-form-status">
+          <option value="active">Active / Ongoing</option>
+          <option value="escalating">Escalating</option>
+          <option value="simmering">Simmering</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Factions / Parties Involved</label><input type="text" id="conflict-form-parties" placeholder="e.g. Stormcloaks vs Imperials"></div>
+      <div class="form-group full"><label>Your Involvement</label><input type="text" id="conflict-form-involvement" placeholder="How are you caught up in this?"></div>
+      <div class="form-group full"><label>Description</label><textarea id="conflict-form-desc" placeholder="What is this conflict about?"></textarea></div>
+      <div class="form-group full"><label>Recent Developments</label><textarea id="conflict-form-updates" placeholder="Latest events, shifts in power..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('conflict')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveConflict()">Save Conflict</button>
+    </div>
+  </div>
+</div>
+
+<!-- JOURNAL -->
+<div class="modal-overlay" id="modal-journal">
+  <div class="modal">
+    <div class="modal-title" id="modal-journal-title">New Journal Entry</div>
+    <input type="hidden" id="journal-edit-id">
+    <div class="form-grid">
+      <div class="form-group"><label>Session Date</label><input type="date" id="journal-form-date"></div>
+      <div class="form-group"><label>In-Game Date / Era</label><input type="text" id="journal-form-ingame" placeholder="e.g. 15th of Frost Fall"></div>
+      <div class="form-group full"><label>Title / Summary</label><input type="text" id="journal-form-title" placeholder="Brief summary of session"></div>
+      <div class="form-group full"><label>Entry</label><textarea id="journal-form-entry" rows="7" placeholder="What happened, who you met, decisions made..."></textarea></div>
+      <div class="form-group full"><label>Key Events (comma-separated)</label><input type="text" id="journal-form-events" placeholder="e.g. Joined guild, killed bandit chief, found artifact"></div>
+      <div class="form-group full"><label>Tags</label>
+        <div class="tag-input-wrap" id="journal-tag-wrap" onclick="document.getElementById('journal-tag-input').focus()">
+          <input type="text" id="journal-tag-input" placeholder="Add tag..." onkeydown="handleTagInput(event,'journal')">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('journal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveJournal()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- ARC MILESTONE -->
+<div class="modal-overlay" id="modal-arc">
+  <div class="modal">
+    <div class="modal-title">Add Arc Milestone</div>
+    <input type="hidden" id="arc-edit-id">
+    <div class="form-grid">
+      <div class="form-group"><label>Milestone Label</label><input type="text" id="arc-form-label" placeholder="e.g. Turning Point, Revelation, Loss"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="arc-form-date"></div>
+      <div class="form-group full"><label>What happened?</label><textarea id="arc-form-text" placeholder="Describe this moment in your character's arc..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('arc')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveArc()">Save Milestone</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREENSHOT -->
+<div class="modal-overlay" id="modal-screenshot">
+  <div class="modal">
+    <div class="modal-title">Add Screenshot</div>
+    <input type="hidden" id="screenshot-edit-id">
+    <input type="hidden" id="shot-form-url">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Image File</label>
+        <div id="shot-drop-zone" onclick="document.getElementById('shot-file-input').click()" style="border:2px dashed var(--border);border-radius:3px;padding:1.5rem;text-align:center;cursor:pointer;transition:border-color 0.2s;background:var(--card-bg);">
+          <div id="shot-preview-thumb" style="display:none;margin-bottom:0.7rem;">
+            <img id="shot-thumb-img" style="max-height:140px;max-width:100%;border-radius:2px;object-fit:contain;">
+          </div>
+          <div id="shot-drop-label" style="color:var(--text-muted);font-style:italic;font-size:0.9rem;">Click to choose a file, or drag & drop an image here</div>
+        </div>
+        <input type="file" id="shot-file-input" accept="image/*" style="display:none" onchange="handleShotFile(event)">
+      </div>
+      <div class="form-group full"><label>Caption</label><input type="text" id="shot-form-caption" placeholder="Brief description of what's happening"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="shot-form-date"></div>
+      <div class="form-group"><label>Linked To</label><input type="text" id="shot-form-link" placeholder="Quest/session name this relates to"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('screenshot')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveScreenshot()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILES -->
+<div class="modal-overlay" id="modal-profiles">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">⚔ Character Profiles</div>
+    <div id="profiles-list" style="margin-bottom:1.2rem"></div>
+    <div style="border-top:1px solid var(--border);padding-top:1rem">
+      <div style="font-family:'Cinzel',serif;font-size:0.72rem;color:var(--ash-light);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.6rem">New Character</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-group full"><label>Character Name *</label><input type="text" id="new-profile-name" placeholder="e.g. Valdris Ashborn"></div>
+        <div class="form-group"><label>Race</label>
+          <select id="new-profile-race">
+            <option value="">— Select —</option>
+            <option>Nord</option><option>Imperial</option><option>Breton</option>
+            <option>Redguard</option><option>Dunmer</option><option>Altmer</option>
+            <option>Bosmer</option><option>Argonian</option><option>Khajiit</option>
+            <option>Orsimer</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Class / Role</label><input type="text" id="new-profile-class" placeholder="e.g. Rogue"></div>
+        <div class="form-group"><label>Icon (emoji)</label><input type="text" id="new-profile-icon" placeholder="e.g. 🗡 🧙 🏹" maxlength="2"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:0.5rem">
+        <button class="btn btn-primary" onclick="createProfile()">Create Character</button>
+      </div>
+    </div>
+    <div class="modal-actions" style="border-top:1px solid var(--border);padding-top:0.8rem;margin-top:0">
+      <button class="btn btn-ghost" onclick="closeModal('profiles')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════
+// PROFILES & DATA
+// ══════════════════════════════════
+const PROFILES_KEY = 'skyrim_rp_profiles';   // stores list of profiles
+const PROFILE_KEY  = 'skyrim_rp_active';     // stores active profile id
+
+function emptyDb() {
+  return {
+    char: {}, wanted: {},
+    players: [], quests: [], factions: [], locations: [],
+    rumors: [], conflicts: [], journal: [], arc: [], screenshots: [],
+    pins: [], threads: [], preSession: '', arcSummary: ''
+  };
+}
+
+let profiles = [];   // [{id, name, race, class, icon}]
+let activeProfileId = null;
+let db = emptyDb();
+let playerFilter = '', questFilter = '', locFilter = '', rumorFilter = '';
+let modalTags = { player:[], quest:[], journal:[], location:[] };
+
+function profileStoreKey(id) { return 'skyrim_rp_data_' + id; }
+
+function loadProfiles() {
+  try { profiles = JSON.parse(localStorage.getItem(PROFILES_KEY)) || []; } catch(e) { profiles = []; }
+  if (!profiles.length) {
+    // First run — create a default profile
+    const def = { id: uid(), name: 'My Character', race: '', class: '', icon: '⚔' };
+    profiles.push(def);
+    saveProfiles();
+  }
+  activeProfileId = localStorage.getItem(PROFILE_KEY) || profiles[0].id;
+  if (!profiles.find(p => p.id === activeProfileId)) activeProfileId = profiles[0].id;
+}
+
+function saveProfiles() {
+  localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+  localStorage.setItem(PROFILE_KEY, activeProfileId);
+}
+
+function save() {
+  localStorage.setItem(profileStoreKey(activeProfileId), JSON.stringify(db));
+  const t = new Date();
+  document.getElementById('save-time').textContent = 'Last saved ' + t.toLocaleTimeString();
+}
+
+function loadProfileData(id) {
+  try {
+    const raw = localStorage.getItem(profileStoreKey(id));
+    db = raw ? { ...emptyDb(), ...JSON.parse(raw) } : emptyDb();
+  } catch(e) { db = emptyDb(); }
+}
+
+function load() {
+  loadProfiles();
+  loadProfileData(activeProfileId);
+  renderProfileSelect();
+  renderProfilesList();
+  renderAll();
+}
+
+function renderAll() {
+  loadChar(); renderPlayers(); renderQuests(); renderFactions();
+  renderLocations(); renderRumors(); renderConflicts();
+  renderJournal(); renderArc(); renderScreenshots();
+  renderPins(); renderThreads();
+  document.getElementById('pre-session-txt').value = db.preSession || '';
+  document.getElementById('arc-summary').value = db.arcSummary || '';
+  updateWantedBanner();
+  // Reset to character tab
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-character').classList.add('active');
+  document.querySelector('.tab-btn').classList.add('active');
+}
+
+function renderProfileSelect() {
+  const sel = document.getElementById('profile-select');
+  sel.innerHTML = profiles.map(p =>
+    `<option value="${p.id}" ${p.id === activeProfileId ? 'selected' : ''}>${p.icon || '⚔'} ${p.name}</option>`
+  ).join('');
+}
+
+function renderProfilesList() {
+  const el = document.getElementById('profiles-list');
+  if (!el) return;
+  el.innerHTML = profiles.map(p => `
+    <div class="profile-card ${p.id === activeProfileId ? 'active-profile' : ''}">
+      <div class="profile-avatar">${p.icon || '⚔'}</div>
+      <div class="profile-info">
+        <div class="profile-name">${p.name} ${p.id === activeProfileId ? '<span style="font-size:0.65rem;color:var(--ember);font-family:Crimson Text,serif;font-style:italic"> — active</span>' : ''}</div>
+        <div class="profile-meta">${[p.race, p.class].filter(Boolean).join(' · ') || 'No details set'}</div>
+      </div>
+      <div style="display:flex;gap:0.35rem;flex-shrink:0">
+        ${p.id !== activeProfileId ? `<button class="btn btn-primary btn-sm" onclick="switchProfile('${p.id}');closeModal('profiles')">Switch</button>` : ''}
+        ${profiles.length > 1 ? `<button class="btn btn-danger" onclick="deleteProfile('${p.id}')">✕</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function switchProfile(id) {
+  if (id === activeProfileId) return;
+  save(); // save current before switching
+  activeProfileId = id;
+  saveProfiles();
+  loadProfileData(id);
+  renderProfileSelect();
+  renderProfilesList();
+  renderAll();
+  const p = profiles.find(p => p.id === id);
+  showToast(`Switched to ${p ? p.name : 'character'} ✦`);
+}
+
+function createProfile() {
+  const name = document.getElementById('new-profile-name').value.trim();
+  if (!name) { showToast('Name required!'); return; }
+  const p = {
+    id: uid(), name,
+    race: document.getElementById('new-profile-race').value,
+    class: document.getElementById('new-profile-class').value,
+    icon: document.getElementById('new-profile-icon').value.trim() || '⚔'
+  };
+  profiles.push(p);
+  saveProfiles();
+  document.getElementById('new-profile-name').value = '';
+  document.getElementById('new-profile-race').value = '';
+  document.getElementById('new-profile-class').value = '';
+  document.getElementById('new-profile-icon').value = '';
+  renderProfileSelect();
+  renderProfilesList();
+  showToast(`${p.name} created ✦`);
+}
+
+function deleteProfile(id) {
+  if (profiles.length <= 1) { showToast("Can't delete the only character!"); return; }
+  const p = profiles.find(p => p.id === id);
+  if (!confirm(`Delete ${p ? p.name : 'this character'} and all their data? This cannot be undone.`)) return;
+  localStorage.removeItem(profileStoreKey(id));
+  profiles = profiles.filter(p => p.id !== id);
+  if (activeProfileId === id) {
+    activeProfileId = profiles[0].id;
+    loadProfileData(activeProfileId);
+  }
+  saveProfiles();
+  renderProfileSelect();
+  renderProfilesList();
+  renderAll();
+  showToast('Character deleted');
+}
+
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+// ══════════════════════════════════
+// UI
+// ══════════════════════════════════
+function switchTab(name,btn) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme')==='dark'?'light':'dark';
+  html.setAttribute('data-theme', next);
+}
+
+function openModal(type,id) {
+  // reset tag state
+  if(modalTags[type]) { modalTags[type]=[]; renderTagChips(type); }
+
+  if(type==='pin') {
+    document.getElementById('pin-edit-id').value='';
+    document.getElementById('pin-form-title').value='';
+    document.getElementById('pin-form-body').value='';
+    if(id){ const p=db.pins.find(p=>p.id===id); if(p){ document.getElementById('pin-edit-id').value=id; document.getElementById('pin-form-title').value=p.title||''; document.getElementById('pin-form-body').value=p.body||''; } }
+  } else if(type==='wanted') {
+    const w=db.wanted||{};
+    document.getElementById('wanted-status').value=w.status||'none';
+    document.getElementById('wanted-by').value=w.by||'';
+    document.getElementById('wanted-reason').value=w.reason||'';
+    document.getElementById('wanted-amount').value=w.amount||'';
+  } else if(type==='player') {
+    clearForm(['player-form-name','player-form-username','player-form-role','player-form-location','player-form-desc','player-form-secrets','player-form-lastseen']);
+    document.getElementById('player-form-rel').value='unknown';
+    document.getElementById('player-form-rpstatus').value='';
+    document.getElementById('player-form-race').value='';
+    document.getElementById('modal-player-title').textContent='Add Player';
+    document.getElementById('player-edit-id').value='';
+    modalTags.player=[];
+    if(id){ const n=db.players.find(n=>n.id===id); if(n){
+      document.getElementById('modal-player-title').textContent='Edit Player';
+      document.getElementById('player-edit-id').value=id;
+      document.getElementById('player-form-name').value=n.name||'';
+      document.getElementById('player-form-username').value=n.username||'';
+      document.getElementById('player-form-race').value=n.race||'';
+      document.getElementById('player-form-role').value=n.role||'';
+      document.getElementById('player-form-location').value=n.location||'';
+      document.getElementById('player-form-rel').value=n.rel||'unknown';
+      document.getElementById('player-form-rpstatus').value=n.rpstatus||'';
+      document.getElementById('player-form-lastseen').value=n.lastseen||'';
+      document.getElementById('player-form-desc').value=n.desc||'';
+      document.getElementById('player-form-secrets').value=n.secrets||'';
+      modalTags.player=n.tags||[];
+    }}
+    renderTagChips('player');
+  } else if(type==='quest') {
+    clearForm(['quest-form-name','quest-form-giver','quest-form-location','quest-form-reward','quest-form-desc','quest-form-progress']);
+    document.getElementById('quest-form-status').value='active';
+    document.getElementById('quest-edit-id').value='';
+    document.getElementById('modal-quest-title').textContent='Add Quest';
+    modalTags.quest=[];
+    if(id){ const q=db.quests.find(q=>q.id===id); if(q){
+      document.getElementById('modal-quest-title').textContent='Edit Quest';
+      document.getElementById('quest-edit-id').value=id;
+      document.getElementById('quest-form-name').value=q.name||'';
+      document.getElementById('quest-form-status').value=q.status||'active';
+      document.getElementById('quest-form-giver').value=q.giver||'';
+      document.getElementById('quest-form-location').value=q.location||'';
+      document.getElementById('quest-form-reward').value=q.reward||'';
+      document.getElementById('quest-form-desc').value=q.desc||'';
+      document.getElementById('quest-form-progress').value=q.progress||'';
+      modalTags.quest=q.tags||[];
+    }}
+    renderTagChips('quest');
+  } else if(type==='faction') {
+    clearForm(['faction-form-name','faction-form-rep','faction-form-rank','faction-form-desc','faction-form-members','faction-form-notes']);
+    document.getElementById('faction-form-standing').value='neutral';
+    document.getElementById('faction-edit-id').value='';
+    document.getElementById('modal-faction-title').textContent='Add Faction';
+    if(id){ const f=db.factions.find(f=>f.id===id); if(f){
+      document.getElementById('modal-faction-title').textContent='Edit Faction';
+      document.getElementById('faction-edit-id').value=id;
+      document.getElementById('faction-form-name').value=f.name||'';
+      document.getElementById('faction-form-standing').value=f.standing||'neutral';
+      document.getElementById('faction-form-rep').value=f.rep||'';
+      document.getElementById('faction-form-rank').value=f.rank||'';
+      document.getElementById('faction-form-desc').value=f.desc||'';
+      document.getElementById('faction-form-members').value=f.members||'';
+      document.getElementById('faction-form-notes').value=f.notes||'';
+    }}
+  } else if(type==='location') {
+    clearForm(['location-form-name','location-form-region','location-form-controller','location-form-desc','location-form-events']);
+    document.getElementById('location-form-safety').value='unknown';
+    document.getElementById('location-edit-id').value='';
+    document.getElementById('modal-location-title').textContent='Add Location';
+    modalTags.location=[];
+    if(id){ const l=db.locations.find(l=>l.id===id); if(l){
+      document.getElementById('modal-location-title').textContent='Edit Location';
+      document.getElementById('location-edit-id').value=id;
+      document.getElementById('location-form-name').value=l.name||'';
+      document.getElementById('location-form-safety').value=l.safety||'unknown';
+      document.getElementById('location-form-region').value=l.region||'';
+      document.getElementById('location-form-controller').value=l.controller||'';
+      document.getElementById('location-form-desc').value=l.desc||'';
+      document.getElementById('location-form-events').value=l.events||'';
+      modalTags.location=l.tags||[];
+    }}
+    renderTagChips('location');
+  } else if(type==='rumor') {
+    clearForm(['rumor-form-text','rumor-form-source','rumor-form-notes']);
+    document.getElementById('rumor-form-status').value='unverified';
+    document.getElementById('rumor-edit-id').value='';
+    document.getElementById('modal-rumor-title').textContent='Add Rumor';
+    if(id){ const r=db.rumors.find(r=>r.id===id); if(r){
+      document.getElementById('modal-rumor-title').textContent='Edit Rumor';
+      document.getElementById('rumor-edit-id').value=id;
+      document.getElementById('rumor-form-text').value=r.text||'';
+      document.getElementById('rumor-form-source').value=r.source||'';
+      document.getElementById('rumor-form-status').value=r.status||'unverified';
+      document.getElementById('rumor-form-notes').value=r.notes||'';
+    }}
+  } else if(type==='conflict') {
+    clearForm(['conflict-form-name','conflict-form-parties','conflict-form-involvement','conflict-form-desc','conflict-form-updates']);
+    document.getElementById('conflict-form-type').value='Political';
+    document.getElementById('conflict-form-status').value='active';
+    document.getElementById('conflict-edit-id').value='';
+    document.getElementById('modal-conflict-title').textContent='Add Conflict';
+    if(id){ const c=db.conflicts.find(c=>c.id===id); if(c){
+      document.getElementById('modal-conflict-title').textContent='Edit Conflict';
+      document.getElementById('conflict-edit-id').value=id;
+      document.getElementById('conflict-form-name').value=c.name||'';
+      document.getElementById('conflict-form-type').value=c.type||'Political';
+      document.getElementById('conflict-form-status').value=c.status||'active';
+      document.getElementById('conflict-form-parties').value=c.parties||'';
+      document.getElementById('conflict-form-involvement').value=c.involvement||'';
+      document.getElementById('conflict-form-desc').value=c.desc||'';
+      document.getElementById('conflict-form-updates').value=c.updates||'';
+    }}
+  } else if(type==='journal') {
+    clearForm(['journal-form-ingame','journal-form-title','journal-form-entry','journal-form-events']);
+    document.getElementById('journal-form-date').value=new Date().toISOString().slice(0,10);
+    document.getElementById('journal-edit-id').value='';
+    document.getElementById('modal-journal-title').textContent='New Journal Entry';
+    modalTags.journal=[];
+    if(id){ const j=db.journal.find(j=>j.id===id); if(j){
+      document.getElementById('modal-journal-title').textContent='Edit Entry';
+      document.getElementById('journal-edit-id').value=id;
+      document.getElementById('journal-form-date').value=j.date||'';
+      document.getElementById('journal-form-ingame').value=j.ingame||'';
+      document.getElementById('journal-form-title').value=j.title||'';
+      document.getElementById('journal-form-entry').value=j.entry||'';
+      document.getElementById('journal-form-events').value=j.events||'';
+      modalTags.journal=j.tags||[];
+    }}
+    renderTagChips('journal');
+  } else if(type==='arc') {
+    clearForm(['arc-form-label','arc-form-text']);
+    document.getElementById('arc-form-date').value=new Date().toISOString().slice(0,10);
+    document.getElementById('arc-edit-id').value='';
+    if(id){ const a=db.arc.find(a=>a.id===id); if(a){
+      document.getElementById('arc-edit-id').value=id;
+      document.getElementById('arc-form-label').value=a.label||'';
+      document.getElementById('arc-form-date').value=a.date||'';
+      document.getElementById('arc-form-text').value=a.text||'';
+    }}
+  } else if(type==='screenshot') {
+    clearForm(['shot-form-caption','shot-form-link']);
+    document.getElementById('shot-form-url').value='';
+    document.getElementById('shot-form-date').value=new Date().toISOString().slice(0,10);
+    document.getElementById('screenshot-edit-id').value='';
+    document.getElementById('shot-preview-thumb').style.display='none';
+    document.getElementById('shot-drop-label').textContent='Click to choose a file, or drag & drop an image here';
+    document.getElementById('shot-file-input').value='';
+    if(id){ const s=db.screenshots.find(s=>s.id===id); if(s){
+      document.getElementById('screenshot-edit-id').value=id;
+      document.getElementById('shot-form-url').value=s.url||'';
+      document.getElementById('shot-form-caption').value=s.caption||'';
+      document.getElementById('shot-form-date').value=s.date||'';
+      document.getElementById('shot-form-link').value=s.link||'';
+      if(s.url){ document.getElementById('shot-thumb-img').src=s.url; document.getElementById('shot-preview-thumb').style.display='block'; document.getElementById('shot-drop-label').textContent='Image loaded'; }
+    }}
+  }
+  document.getElementById('modal-'+type).classList.add('open');
+}
+
+function closeModal(type) { document.getElementById('modal-'+type).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+function clearForm(ids) { ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); }
+
+// ══════════════════════════════════
+// TAGS
+// ══════════════════════════════════
+function handleTagInput(e, type) {
+  if(e.key==='Enter'||e.key===',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,$/,'');
+    if(val && !modalTags[type].includes(val)) {
+      modalTags[type].push(val);
+      renderTagChips(type);
+    }
+    e.target.value='';
+  }
+}
+function removeTag(type,tag) {
+  modalTags[type]=modalTags[type].filter(t=>t!==tag);
+  renderTagChips(type);
+}
+function renderTagChips(type) {
+  const wrap = document.getElementById(type+'-tag-wrap');
+  const input = document.getElementById(type+'-tag-input');
+  wrap.innerHTML='';
+  modalTags[type].forEach(tag=>{
+    const chip=document.createElement('span');
+    chip.className='tag-chip';
+    chip.innerHTML=`${tag}<button onclick="removeTag('${type}','${tag}')">×</button>`;
+    wrap.appendChild(chip);
+  });
+  wrap.appendChild(input);
+}
+function renderTags(tags) {
+  if(!tags||!tags.length) return '';
+  return tags.map(t=>`<span class="tag tag-custom">${t}</span>`).join('');
+}
+
+// ══════════════════════════════════
+// CHARACTER
+// ══════════════════════════════════
+function saveChar() {
+  const fields=['name','race','gender','age','class','appearance','skills','powers','origin','goals','secrets','weapons','armor','items','gold','personality','notes','rep-known','rep-standing','rep-perception'];
+  fields.forEach(f=>{ const el=document.getElementById('char-'+f); if(el) db.char[f]=el.value; });
+  save();
+}
+function loadChar() {
+  if(!db.char) return;
+  ['name','race','gender','age','class','appearance','skills','powers','origin','goals','secrets','weapons','armor','items','gold','personality','notes','rep-known','rep-standing','rep-perception'].forEach(f=>{
+    const el=document.getElementById('char-'+f);
+    if(el&&db.char[f]!==undefined) el.value=db.char[f];
+  });
+}
+
+// ══════════════════════════════════
+// WANTED
+// ══════════════════════════════════
+function saveWanted() {
+  db.wanted = {
+    status: document.getElementById('wanted-status').value,
+    by: document.getElementById('wanted-by').value,
+    reason: document.getElementById('wanted-reason').value,
+    amount: document.getElementById('wanted-amount').value
+  };
+  save(); closeModal('wanted'); updateWantedBanner();
+}
+function updateWantedBanner() {
+  const w=db.wanted||{}; const banner=document.getElementById('wanted-banner');
+  const btn=document.getElementById('bounty-btn');
+  if(w.status&&w.status!=='none') {
+    banner.style.display='flex';
+    document.getElementById('wanted-title').textContent = w.status.toUpperCase().replace('-',' ') + (w.amount?' — '+w.amount:'');
+    document.getElementById('wanted-detail').textContent = [w.reason?'For: '+w.reason:'', w.by?'By: '+w.by:''].filter(Boolean).join(' · ');
+    btn.textContent='Edit Bounty';
+  } else {
+    banner.style.display='none';
+    btn.textContent='Set Bounty';
+  }
+}
+
+// ══════════════════════════════════
+// PLAYERS
+// ══════════════════════════════════
+function savePlayer() {
+  const name=document.getElementById('player-form-name').value.trim();
+  if(!name){showToast('Name required!');return;}
+  const id=document.getElementById('player-edit-id').value;
+  const existing=id?db.players.find(n=>n.id===id):null;
+  const p={
+    id:id||uid(), name,
+    username:document.getElementById('player-form-username').value,
+    race:document.getElementById('player-form-race').value,
+    role:document.getElementById('player-form-role').value,
+    location:document.getElementById('player-form-location').value,
+    rel:document.getElementById('player-form-rel').value,
+    rpstatus:document.getElementById('player-form-rpstatus').value,
+    lastseen:document.getElementById('player-form-lastseen').value,
+    desc:document.getElementById('player-form-desc').value,
+    secrets:document.getElementById('player-form-secrets').value,
+    tags:[...modalTags.player],
+    encounters:existing?existing.encounters||[]:[]
+  };
+  if(id){const i=db.players.findIndex(n=>n.id===id);db.players[i]=p;}
+  else db.players.unshift(p);
+  save();closeModal('player');renderPlayers();
+}
+function deletePlayer(id){if(!confirm('Remove this player?'))return;db.players=db.players.filter(n=>n.id!==id);save();renderPlayers();}
+function filterPlayers(rel){playerFilter=rel;renderPlayers();}
+function addEncounter(pid) {
+  const input=document.getElementById('enc-input-'+pid);
+  const val=input.value.trim(); if(!val) return;
+  const p=db.players.find(p=>p.id===pid); if(!p) return;
+  if(!p.encounters) p.encounters=[];
+  p.encounters.unshift({date:new Date().toISOString().slice(0,10),text:val});
+  input.value=''; save(); renderPlayers();
+}
+function pinItem(btn) {
+  const card = btn.closest('.card');
+  const title = card.querySelector('.card-title') ? card.querySelector('.card-title').textContent.trim().split(/[\s\n]/)[0] : 'Note';
+  const body = card.querySelector('.card-body') ? card.querySelector('.card-body').textContent.trim().slice(0,120) : '';
+  db.pins.unshift({id:uid(), title, body});
+  save(); renderPins(); showToast('Pinned ✦');
+}
+function rpStatusTag(s){
+  if(!s) return '';
+  const labels={'close-ally':'Close Ally','rival':'Rival','romance':'Romance','mentor':'Mentor','debt':'Debt Owed'};
+  return `<span class="tag rp-${s}">${labels[s]||s}</span>`;
+}
+function renderPlayers() {
+  const q=(document.getElementById('player-search').value||'').toLowerCase();
+  let list=db.players.filter(n=>{
+    const mf=!playerFilter||n.rel===playerFilter;
+    const ms=!q||[n.name,n.username,n.role,n.location,n.desc,n.secrets].join(' ').toLowerCase().includes(q);
+    return mf&&ms;
+  });
+  const el=document.getElementById('player-list');
+  if(!list.length){el.innerHTML=`<div class="empty-state"><div class="ei">👤</div>No players found. Add one above.</div>`;return;}
+  el.innerHTML=list.map(n=>`
+    <div class="card">
+      <div class="card-header">
+        <div style="flex:1">
+          <div class="card-title">${n.name}${n.username?` <span style="font-size:0.78rem;color:var(--text-muted);font-style:italic">${n.username}</span>`:''} <span class="tag tag-${n.rel}">${n.rel}</span>${rpStatusTag(n.rpstatus)}</div>
+          <div class="card-meta">${[n.race,n.role,n.location].filter(Boolean).join(' · ')}${n.lastseen?` · Last seen: ${n.lastseen}`:''}</div>
+          ${renderTags(n.tags)}
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-pin" onclick="pinItem(this)">📌</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('player','${n.id}')">Edit</button>
+          <button class="btn btn-danger" onclick="deletePlayer('${n.id}')">✕</button>
+        </div>
+      </div>
+      ${n.desc?`<div class="card-body" style="margin-bottom:0.4rem">${n.desc}</div>`:''}
+      ${n.secrets?`<div style="margin-top:0.3rem;font-size:0.88rem;color:var(--text-muted);font-style:italic"><strong style="font-family:'Cinzel',serif;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ash-light)">Intel: </strong>${n.secrets}</div>`:''}
+      <div class="enc-log">
+        <div style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--ash-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem">Encounter Log</div>
+        ${(n.encounters||[]).slice(0,3).map(e=>`<div class="enc-entry"><span class="enc-date">${e.date}</span><span class="enc-text">${e.text}</span></div>`).join('')}
+        <div class="add-enc">
+          <input type="text" id="enc-input-${n.id}" placeholder="Log an encounter...">
+          <button onclick="addEncounter('${n.id}')">+</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// QUESTS
+// ══════════════════════════════════
+function saveQuest() {
+  const name=document.getElementById('quest-form-name').value.trim();
+  if(!name){showToast('Quest name required!');return;}
+  const id=document.getElementById('quest-edit-id').value;
+  const q={id:id||uid(),name,
+    status:document.getElementById('quest-form-status').value,
+    giver:document.getElementById('quest-form-giver').value,
+    location:document.getElementById('quest-form-location').value,
+    reward:document.getElementById('quest-form-reward').value,
+    desc:document.getElementById('quest-form-desc').value,
+    progress:document.getElementById('quest-form-progress').value,
+    tags:[...modalTags.quest]
+  };
+  if(id){const i=db.quests.findIndex(q=>q.id===id);db.quests[i]=q;}else db.quests.unshift(q);
+  save();closeModal('quest');renderQuests();
+}
+function deleteQuest(id){if(!confirm('Remove quest?'))return;db.quests=db.quests.filter(q=>q.id!==id);save();renderQuests();}
+function filterQuests(s){questFilter=s;renderQuests();}
+function renderQuests() {
+  let list=questFilter?db.quests.filter(q=>q.status===questFilter):db.quests;
+  const el=document.getElementById('quest-list');
+  if(!list.length){el.innerHTML=`<div class="empty-state"><div class="ei">📜</div>No quests found.</div>`;return;}
+  el.innerHTML=list.map(q=>`
+    <div class="card">
+      <div class="card-header">
+        <div style="flex:1">
+          <div class="card-title">${q.name} <span class="tag tag-${q.status}">${q.status}</span></div>
+          <div class="card-meta">${[q.giver?'From: '+q.giver:'',q.location,q.reward?'Reward: '+q.reward:''].filter(Boolean).join(' · ')}</div>
+          ${renderTags(q.tags)}
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('quest','${q.id}')">Edit</button>
+          <button class="btn btn-danger" onclick="deleteQuest('${q.id}')">✕</button>
+        </div>
+      </div>
+      ${q.desc?`<div class="card-body" style="margin-bottom:0.4rem">${q.desc}</div>`:''}
+      ${q.progress?`<div style="margin-top:0.4rem;padding:0.4rem 0.6rem;background:rgba(0,0,0,0.15);border-left:2px solid var(--ember);font-size:0.88rem;font-style:italic">${q.progress}</div>`:''}
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// FACTIONS
+// ══════════════════════════════════
+function saveFaction() {
+  const name=document.getElementById('faction-form-name').value.trim();
+  if(!name){showToast('Name required!');return;}
+  const id=document.getElementById('faction-edit-id').value;
+  const rep=parseInt(document.getElementById('faction-form-rep').value)||0;
+  const f={id:id||uid(),name,rep,
+    standing:document.getElementById('faction-form-standing').value,
+    rank:document.getElementById('faction-form-rank').value,
+    desc:document.getElementById('faction-form-desc').value,
+    members:document.getElementById('faction-form-members').value,
+    notes:document.getElementById('faction-form-notes').value
+  };
+  if(id){const i=db.factions.findIndex(f=>f.id===id);db.factions[i]=f;}else db.factions.unshift(f);
+  save();closeModal('faction');renderFactions();
+}
+function deleteFaction(id){if(!confirm('Remove faction?'))return;db.factions=db.factions.filter(f=>f.id!==id);save();renderFactions();}
+function repColor(r){return r>=70?'#7dcf7d':r>=40?'#d4a843':'#cf7d7d';}
+function renderFactions() {
+  const el=document.getElementById('faction-list');
+  if(!db.factions.length){el.innerHTML=`<div class="empty-state"><div class="ei">🏰</div>No factions tracked yet.</div>`;return;}
+  el.innerHTML=db.factions.map(f=>{
+    const r=Math.min(100,Math.max(0,f.rep||0));const c=repColor(r);
+    return `<div class="card">
+      <div class="card-header">
+        <div><div class="card-title">${f.name} <span class="tag tag-${f.standing}">${f.standing}</span>${f.rank?` <span style="font-size:0.8rem;font-style:italic;color:var(--text-muted)">${f.rank}</span>`:''}</div></div>
+        <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('faction','${f.id}')">Edit</button>
+          <button class="btn btn-danger" onclick="deleteFaction('${f.id}')">✕</button>
+        </div>
+      </div>
+      ${f.rep!==undefined&&f.rep!==''?`<div class="rep-bar-wrap"><div class="rep-label"><span>Reputation</span><span style="color:${c}">${r}/100</span></div><div class="rep-bar"><div class="rep-fill" style="width:${r}%;background:${c}"></div></div></div>`:''}
+      ${f.desc?`<div class="card-body" style="margin-top:0.6rem">${f.desc}</div>`:''}
+      ${f.members?`<div style="margin-top:0.4rem;font-size:0.88rem"><strong style="font-family:'Cinzel',serif;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">Members: </strong><span style="font-style:italic">${f.members}</span></div>`:''}
+      ${f.notes?`<div style="margin-top:0.4rem;font-size:0.88rem;color:var(--text-muted);font-style:italic">${f.notes}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════
+// LOCATIONS
+// ══════════════════════════════════
+function saveLocation() {
+  const name=document.getElementById('location-form-name').value.trim();
+  if(!name){showToast('Name required!');return;}
+  const id=document.getElementById('location-edit-id').value;
+  const l={id:id||uid(),name,
+    safety:document.getElementById('location-form-safety').value,
+    region:document.getElementById('location-form-region').value,
+    controller:document.getElementById('location-form-controller').value,
+    desc:document.getElementById('location-form-desc').value,
+    events:document.getElementById('location-form-events').value,
+    tags:[...modalTags.location]
+  };
+  if(id){const i=db.locations.findIndex(l=>l.id===id);db.locations[i]=l;}else db.locations.unshift(l);
+  save();closeModal('location');renderLocations();
+}
+function deleteLocation(id){if(!confirm('Remove location?'))return;db.locations=db.locations.filter(l=>l.id!==id);save();renderLocations();}
+function filterLocations(s){locFilter=s;renderLocations();}
+const safetyLabel={'safe':'✓ Safe','danger':'⚠ Dangerous','neutral':'— Neutral','unknown':'? Unknown'};
+const safetyColor={'safe':'#7dcf7d','danger':'#cf7d7d','neutral':null,'unknown':null};
+function renderLocations() {
+  let list=locFilter?db.locations.filter(l=>l.safety===locFilter):db.locations;
+  const el=document.getElementById('location-list');
+  if(!list.length){el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="ei">🗺</div>No locations discovered yet.</div>`;return;}
+  el.innerHTML=list.map(l=>`
+    <div class="loc-card loc-${l.safety||'unknown'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem">
+        <div class="card-title" style="font-size:0.9rem">${l.name}</div>
+        <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('location','${l.id}')">Edit</button>
+          <button class="btn btn-danger" onclick="deleteLocation('${l.id}')">✕</button>
+        </div>
+      </div>
+      <div style="font-size:0.78rem;color:${safetyColor[l.safety]||'var(--text-muted)'};font-family:'Cinzel',serif;letter-spacing:0.06em;margin-bottom:0.3rem">${safetyLabel[l.safety||'unknown']}</div>
+      <div class="card-meta">${[l.region,l.controller?'Controlled by: '+l.controller:''].filter(Boolean).join(' · ')}</div>
+      ${l.desc?`<div style="font-size:0.88rem;margin-top:0.3rem;color:var(--text);line-height:1.5">${l.desc}</div>`:''}
+      ${l.events?`<div style="margin-top:0.4rem;font-size:0.82rem;color:var(--text-muted);font-style:italic;border-top:1px solid var(--border);padding-top:0.3rem">${l.events}</div>`:''}
+      ${renderTags(l.tags)}
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// RUMORS
+// ══════════════════════════════════
+function saveRumor() {
+  const text=document.getElementById('rumor-form-text').value.trim();
+  if(!text){showToast('Rumor text required!');return;}
+  const id=document.getElementById('rumor-edit-id').value;
+  const r={id:id||uid(),text,
+    source:document.getElementById('rumor-form-source').value,
+    status:document.getElementById('rumor-form-status').value,
+    notes:document.getElementById('rumor-form-notes').value
+  };
+  if(id){const i=db.rumors.findIndex(r=>r.id===id);db.rumors[i]=r;}else db.rumors.unshift(r);
+  save();closeModal('rumor');renderRumors();
+}
+function deleteRumor(id){if(!confirm('Remove rumor?'))return;db.rumors=db.rumors.filter(r=>r.id!==id);save();renderRumors();}
+function setRumorStatus(id,status){const r=db.rumors.find(r=>r.id===id);if(r){r.status=status;save();renderRumors();}}
+function filterRumors(s){rumorFilter=s;renderRumors();}
+const rumorStatusLabel={'unverified':'? Unverified','confirmed':'✓ Confirmed True','false':'✕ False'};
+const rumorStatusColor={'unverified':'var(--ash-light)','confirmed':'#7dcf7d','false':'#cf7d7d'};
+function renderRumors() {
+  let list=rumorFilter?db.rumors.filter(r=>r.status===rumorFilter):db.rumors;
+  const el=document.getElementById('rumor-list');
+  if(!list.length){el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="ei">📣</div>No rumors recorded.</div>`;return;}
+  el.innerHTML=list.map(r=>`
+    <div class="rumor-card ${r.status==='confirmed'?'confirmed':r.status==='false'?'false':''}">
+      <div class="rumor-status" style="color:${rumorStatusColor[r.status||'unverified']}">${rumorStatusLabel[r.status||'unverified']}</div>
+      <div style="font-size:0.92rem;font-style:italic;line-height:1.5;margin-bottom:0.4rem">"${r.text}"</div>
+      ${r.source?`<div style="font-size:0.78rem;color:var(--text-muted)">Source: ${r.source}</div>`:''}
+      ${r.notes?`<div style="font-size:0.82rem;color:var(--text-muted);margin-top:0.3rem;font-style:italic">${r.notes}</div>`:''}
+      <div style="display:flex;gap:0.3rem;margin-top:0.6rem;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="setRumorStatus('${r.id}','confirmed')">✓ True</button>
+        <button class="btn btn-ghost btn-sm" onclick="setRumorStatus('${r.id}','false')">✕ False</button>
+        <button class="btn btn-ghost btn-sm" onclick="setRumorStatus('${r.id}','unverified')">? Reset</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('rumor','${r.id}')">Edit</button>
+        <button class="btn btn-danger" onclick="deleteRumor('${r.id}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// CONFLICTS
+// ══════════════════════════════════
+function saveConflict() {
+  const name=document.getElementById('conflict-form-name').value.trim();
+  if(!name){showToast('Name required!');return;}
+  const id=document.getElementById('conflict-edit-id').value;
+  const c={id:id||uid(),name,
+    type:document.getElementById('conflict-form-type').value,
+    status:document.getElementById('conflict-form-status').value,
+    parties:document.getElementById('conflict-form-parties').value,
+    involvement:document.getElementById('conflict-form-involvement').value,
+    desc:document.getElementById('conflict-form-desc').value,
+    updates:document.getElementById('conflict-form-updates').value
+  };
+  if(id){const i=db.conflicts.findIndex(c=>c.id===id);db.conflicts[i]=c;}else db.conflicts.unshift(c);
+  save();closeModal('conflict');renderConflicts();
+}
+function deleteConflict(id){if(!confirm('Remove conflict?'))return;db.conflicts=db.conflicts.filter(c=>c.id!==id);save();renderConflicts();}
+const conflictStatusColor={'active':'#cf7d7d','escalating':'#e07030','simmering':'#d4a843','resolved':'#7dcf7d'};
+function renderConflicts() {
+  const el=document.getElementById('conflict-list');
+  if(!db.conflicts.length){el.innerHTML=`<div class="empty-state"><div class="ei">⚡</div>No conflicts tracked.</div>`;return;}
+  el.innerHTML=db.conflicts.map(c=>`
+    <div class="conflict-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem">
+        <div>
+          <div class="card-title">${c.name} <span style="font-size:0.72rem;font-family:'Cinzel',serif;color:${conflictStatusColor[c.status]||'var(--text-muted)'};text-transform:uppercase;letter-spacing:0.06em">${c.status}</span></div>
+          <div class="card-meta">${[c.type,c.parties].filter(Boolean).join(' · ')}</div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('conflict','${c.id}')">Edit</button>
+          <button class="btn btn-danger" onclick="deleteConflict('${c.id}')">✕</button>
+        </div>
+      </div>
+      ${c.involvement?`<div style="font-size:0.85rem;color:var(--text-muted)"><strong style="font-family:'Cinzel',serif;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em">Your role: </strong>${c.involvement}</div>`:''}
+      ${c.desc?`<div class="card-body" style="margin-top:0.4rem">${c.desc}</div>`:''}
+      ${c.updates?`<div style="margin-top:0.5rem;padding:0.4rem 0.6rem;background:rgba(139,26,26,0.1);border-left:2px solid #8b1a1a;font-size:0.88rem;font-style:italic">${c.updates}</div>`:''}
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// JOURNAL
+// ══════════════════════════════════
+function saveJournal() {
+  const title=document.getElementById('journal-form-title').value.trim();
+  if(!title){showToast('Title required!');return;}
+  const id=document.getElementById('journal-edit-id').value;
+  const j={id:id||uid(),title,
+    date:document.getElementById('journal-form-date').value,
+    ingame:document.getElementById('journal-form-ingame').value,
+    entry:document.getElementById('journal-form-entry').value,
+    events:document.getElementById('journal-form-events').value,
+    tags:[...modalTags.journal]
+  };
+  if(id){const i=db.journal.findIndex(j=>j.id===id);db.journal[i]=j;}else db.journal.unshift(j);
+  save();closeModal('journal');renderJournal();
+}
+function deleteJournal(id){if(!confirm('Delete entry?'))return;db.journal=db.journal.filter(j=>j.id!==id);save();renderJournal();}
+function renderJournal() {
+  const el=document.getElementById('journal-list');
+  if(!db.journal.length){el.innerHTML=`<div class="empty-state"><div class="ei">📖</div>Your chronicle awaits.</div>`;return;}
+  el.innerHTML=`<div class="timeline">${db.journal.map(j=>`
+    <div class="timeline-entry">
+      <div class="timeline-date">${j.date||''}${j.ingame?' · '+j.ingame:''}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem">
+        <div class="card-title">${j.title}</div>
+        <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('journal','${j.id}')">Edit</button>
+          <button class="btn btn-danger" onclick="deleteJournal('${j.id}')">✕</button>
+        </div>
+      </div>
+      ${j.entry?`<div style="font-style:italic;line-height:1.7;font-size:0.92rem">${j.entry.replace(/\n/g,'<br>')}</div>`:''}
+      ${j.events?`<div style="margin-top:0.6rem">${j.events.split(',').map(e=>`<span class="tag" style="background:rgba(184,148,58,0.1);color:var(--gold);border:1px solid rgba(184,148,58,0.22)">${e.trim()}</span>`).join('')}</div>`:''}
+      ${renderTags(j.tags)}
+    </div>
+  `).join('')}</div>`;
+}
+
+// ══════════════════════════════════
+// ARC
+// ══════════════════════════════════
+function saveArcSummary(){db.arcSummary=document.getElementById('arc-summary').value;save();}
+function saveArc() {
+  const text=document.getElementById('arc-form-text').value.trim();
+  if(!text){showToast('Description required!');return;}
+  const id=document.getElementById('arc-edit-id').value;
+  const a={id:id||uid(),
+    label:document.getElementById('arc-form-label').value,
+    date:document.getElementById('arc-form-date').value,
+    text
+  };
+  if(id){const i=db.arc.findIndex(a=>a.id===id);db.arc[i]=a;}else db.arc.unshift(a);
+  save();closeModal('arc');renderArc();
+}
+function deleteArc(id){if(!confirm('Remove milestone?'))return;db.arc=db.arc.filter(a=>a.id!==id);save();renderArc();}
+function renderArc() {
+  const el=document.getElementById('arc-list');
+  if(!db.arc.length){el.innerHTML=`<div style="text-align:center;padding:1rem;color:var(--ash);font-style:italic">No milestones yet.</div>`;return;}
+  el.innerHTML=db.arc.map(a=>`
+    <div class="arc-milestone">
+      <div class="arc-dot"></div>
+      <div class="arc-content">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="arc-label">${a.label||'Milestone'}${a.date?` <span style="font-weight:400;color:var(--ash);font-size:0.7rem">${a.date}</span>`:''}</div>
+            <div class="arc-text">${a.text}</div>
+          </div>
+          <div class="card-actions" style="margin-left:0.5rem">
+            <button class="btn btn-ghost btn-sm" onclick="openModal('arc','${a.id}')">Edit</button>
+            <button class="btn btn-danger" onclick="deleteArc('${a.id}')">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// SCREENSHOTS
+// ══════════════════════════════════
+function handleShotFile(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('shot-form-url').value = ev.target.result;
+    document.getElementById('shot-thumb-img').src = ev.target.result;
+    document.getElementById('shot-preview-thumb').style.display = 'block';
+    document.getElementById('shot-drop-label').textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+}
+// Drag & drop support for screenshot zone
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('shot-drop-zone');
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const fakeEvt = { target: { files: [file] } };
+      handleShotFile(fakeEvt);
+    }
+  });
+});
+function saveScreenshot() {
+  const url=document.getElementById('shot-form-url').value.trim();
+  const caption=document.getElementById('shot-form-caption').value.trim();
+  if(!url&&!caption){showToast('Add an image or caption!');return;}
+  const id=document.getElementById('screenshot-edit-id').value;
+  const s={id:id||uid(),url,caption,
+    date:document.getElementById('shot-form-date').value,
+    link:document.getElementById('shot-form-link').value
+  };
+  if(id){const i=db.screenshots.findIndex(s=>s.id===id);db.screenshots[i]=s;}else db.screenshots.unshift(s);
+  save();closeModal('screenshot');renderScreenshots();
+}
+function deleteScreenshot(id){if(!confirm('Remove screenshot?'))return;db.screenshots=db.screenshots.filter(s=>s.id!==id);save();renderScreenshots();}
+function renderScreenshots() {
+  const el=document.getElementById('screenshot-list');
+  if(!db.screenshots.length){el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="ei">🖼</div>No screenshots logged yet.</div>`;return;}
+  el.innerHTML=db.screenshots.map(s=>`
+    <div class="shot-card">
+      <div class="shot-preview">${s.url?`<img src="${s.url}" alt="${s.caption||''}" onerror="this.parentElement.innerHTML='⚠ Image unavailable'">`:''}</div>
+      <div class="shot-caption">${s.caption||'No caption'}</div>
+      ${s.link?`<div style="font-size:0.75rem;color:var(--ash-light);margin-top:0.2rem;font-style:italic">${s.link}</div>`:''}
+      <div style="font-size:0.72rem;color:var(--ash);margin-top:0.2rem">${s.date||''}</div>
+      <div style="display:flex;gap:0.3rem;margin-top:0.5rem">
+        <button class="btn btn-ghost btn-sm" onclick="openModal('screenshot','${s.id}')">Edit</button>
+        <button class="btn btn-danger" onclick="deleteScreenshot('${s.id}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// PINS
+// ══════════════════════════════════
+function savePin() {
+  const title=document.getElementById('pin-form-title').value.trim();
+  const body=document.getElementById('pin-form-body').value.trim();
+  if(!title&&!body){showToast('Add some content!');return;}
+  const id=document.getElementById('pin-edit-id').value;
+  const p={id:id||uid(),title,body};
+  if(id){const i=db.pins.findIndex(p=>p.id===id);db.pins[i]=p;}else db.pins.unshift(p);
+  save();closeModal('pin');renderPins();showToast('Pinned ✦');
+}
+function deletePin(id){db.pins=db.pins.filter(p=>p.id!==id);save();renderPins();}
+function renderPins() {
+  const el=document.getElementById('pin-list');
+  if(!db.pins.length){el.innerHTML=`<div style="font-size:0.8rem;color:var(--ash);font-style:italic;padding:0.3rem 0">No pins yet.</div>`;return;}
+  el.innerHTML=db.pins.map(p=>`
+    <div class="pin-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="pin-title">${p.title||'Note'}</div>
+        <div style="display:flex;gap:0.2rem">
+          <button class="icon-btn" style="width:20px;height:20px;font-size:0.65rem" onclick="openModal('pin','${p.id}')">✎</button>
+          <button class="icon-btn" style="width:20px;height:20px;font-size:0.65rem;color:#c06060" onclick="deletePin('${p.id}')">✕</button>
+        </div>
+      </div>
+      <div class="pin-body">${p.body||''}</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// THREADS
+// ══════════════════════════════════
+function addThread() {
+  const val=document.getElementById('thread-input').value.trim();
+  if(!val) return;
+  db.threads.push({id:uid(),text:val,done:false});
+  document.getElementById('thread-input').value='';
+  save();renderThreads();
+}
+function toggleThread(id) {
+  const t=db.threads.find(t=>t.id===id);if(t)t.done=!t.done;
+  save();renderThreads();
+}
+function deleteThread(id){db.threads=db.threads.filter(t=>t.id!==id);save();renderThreads();}
+function renderThreads() {
+  const el=document.getElementById('thread-list');
+  if(!db.threads.length){el.innerHTML=`<div style="font-size:0.8rem;color:var(--ash);font-style:italic;padding:0.3rem 0">No loose threads.</div>`;return;}
+  el.innerHTML=db.threads.map(t=>`
+    <div class="loose-thread">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleThread('${t.id}')">
+      <span class="${t.done?'resolved':''}">${t.text}</span>
+      <button class="icon-btn" style="width:18px;height:18px;font-size:0.6rem;color:#c06060;flex-shrink:0" onclick="deleteThread('${t.id}')">✕</button>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// PRE-SESSION
+// ══════════════════════════════════
+function savePreSession(){db.preSession=document.getElementById('pre-session-txt').value;save();}
+
+// ══════════════════════════════════
+// EXPORT / IMPORT
+// ══════════════════════════════════
+function exportData() {
+  const p = profiles.find(p => p.id === activeProfileId);
+  const exportObj = { profile: p, data: db };
+  const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `dovahkiin-codex-${(p ? p.name : 'character').replace(/\s+/g,'-').toLowerCase()}.json`;
+  a.click(); showToast('Exported ✦');
+}
+function importData(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      // Support both old flat format and new {profile, data} format
+      const data = parsed.data || parsed;
+      db = { ...emptyDb(), ...data };
+      save();
+      if (parsed.profile) {
+        const existing = profiles.find(p => p.id === parsed.profile.id);
+        if (!existing) { profiles.push(parsed.profile); saveProfiles(); renderProfileSelect(); }
+      }
+      renderAll(); showToast('Data imported ✦');
+    } catch { showToast('Import failed'); }
+  };
+  r.readAsText(file); e.target.value = '';
+}
+
+// ══════════════════════════════════
+// TOAST
+// ══════════════════════════════════
+let tt;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+load();
+</script>
+</body>
+</html>
